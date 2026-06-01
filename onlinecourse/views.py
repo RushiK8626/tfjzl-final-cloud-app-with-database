@@ -159,19 +159,25 @@ def show_exam_result(request, course_id, submission_id):
         selected_choices = Choice.objects.filter(id__in=selected_choice_ids)
         not_selected_choices = Choice.objects.filter(id__in=not_selected_choice_ids)
         
+        # Calculate obtained grade for this question
+        if selected_choice_ids == correct_choice_ids:
+            obtained_grade = question.grade_point
+            is_correct = True
+        else:
+            obtained_grade = 0
+            is_correct = False
+        
+        total_obtained_score += obtained_grade
+        
         result = {
             'question': question.question_text,
             'correct_answers': correct_choices,
             'selected_answers': selected_choices,
             'not_selected_answers': not_selected_choices,
+            'grade_point': question.grade_point,
+            'obtained_grade': obtained_grade,
+            'is_correct': is_correct,
         }
-        
-        # Use the question's is_get_score method to check if answer is correct
-        if selected_choice_ids == correct_choice_ids:
-            total_obtained_score += question.grade_point
-            result['is_correct'] = True
-        else:
-            result['is_correct'] = False
         
         results.append(result)
             

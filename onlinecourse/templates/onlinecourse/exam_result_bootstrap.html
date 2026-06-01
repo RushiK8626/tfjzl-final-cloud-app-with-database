@@ -58,6 +58,14 @@
                         {{ result.question }}
                     </div>
                     <div class="card-body">
+                        <p class="fw-semibold mb-2">
+                            {% if result.obtained_grade == result.grade_point %}
+                            <span class="badge badge-success">Grade: {{ result.obtained_grade }}/{{ result.grade_point }}</span>
+                            {% else %}
+                            <span class="badge badge-danger">Grade: {{ result.obtained_grade }}/{{ result.grade_point }}</span>
+                            {% endif %}
+                        </p>
+                        
                         <p class="text-success fw-semibold mb-1">
                             Correct answer(s): 
                             {% for answer in result.correct_answers %}
