@@ -9,7 +9,6 @@ except Exception:
 from django.conf import settings
 import uuid
 
-
 # Instructor model
 class Instructor(models.Model):
     user = models.ForeignKey(
@@ -77,8 +76,6 @@ class Lesson(models.Model):
 
 
 # Enrollment model
-# <HINT> Once a user enrolled a class, an enrollment entry should be created between the user and course
-# And we could use the enrollment to track information such as exam submissions
 class Enrollment(models.Model):
     AUDIT = 'audit'
     HONOR = 'honor'
@@ -94,10 +91,45 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
+class Question(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='questions'
+    )
+    question_text = models.TextField()
+    grade_point = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.course.name} - Q: {self.question_text[:50]}"
+
+    # method to calculate if the learner gets the score of the question
+    def is_get_score(self, selected_ids):
+        correct_ids = set(
+            self.choices.filter(is_correct=True)
+            .values_list('id', flat=True)
+        )
+        selected_ids = set(selected_ids)
+
+        return correct_ids == selected_ids
+
+class Choice(models.Model):
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="choices"
+    )
+    choice_text = models.TextField()
+    is_correct = models.BooleanField(
+        default=False
+    )
+
+    def __str__(self):
+        return f"{self.question.question_text} - {self.choice_text[:50]}"
 
 # One enrollment could have multiple submission
 # One submission could have multiple choices
 # One choice could belong to multiple submissions
-#class Submission(models.Model):
-#    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-#    choices = models.ManyToManyField(Choice)
+class Submission(models.Model):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
